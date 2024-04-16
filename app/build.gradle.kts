@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.hiltDagger)
     kotlin("kapt")
 }
 
@@ -47,8 +48,19 @@ kapt {
 
 
 dependencies {
+
     implementation(libs.hilt)
     kapt(libs.hiltCompiler)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverter)
+    implementation(libs.loggingInterceptor)
+
+    implementation(libs.liveData)
+    implementation(libs.viewModel)
+
+    implementation(libs.fragmentKtx)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
