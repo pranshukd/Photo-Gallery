@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var photoAdapter: PhotoAdapter
+    private var currPage = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         viewModel.photos.observe(this){ handleApiResponse(it)}
-        viewModel.getRandomImages(20,500, applicationContext)
+        viewModel.getImages(20,500, applicationContext)
         setAdapter()
     }
 
@@ -43,6 +44,10 @@ class MainActivity : AppCompatActivity() {
     private fun handleApiResponse(response: GetRandomImagesResponse?) {
         response?.let {
             photoAdapter.setPhotos(it)
+            currPage++
+            if(photoAdapter.itemCount<10000){
+                viewModel.getImages(currPage,30, applicationContext)
+            }
         }
     }
 }

@@ -11,7 +11,8 @@
         android:id="@+id/rvPhotos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Hello World!"
+
+        android:orientation="vertical"
         app:spanCount="3"
         tools:itemCount="1000"
         tools:listitem="@layout/item_image"

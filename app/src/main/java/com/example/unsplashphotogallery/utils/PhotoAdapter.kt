@@ -30,9 +30,9 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
     override fun getItemCount(): Int = photos.size
 
     fun setPhotos(newPhotos: List<UnsplashImage>) {
-        photos.clear()
+//        photos.clear()
         photos.addAll(newPhotos)
-        notifyItemRangeChanged(0, photos.size)
+        notifyItemRangeChanged(photos.size-newPhotos.size, newPhotos.size)
     }
 
     class PhotoViewHolder(var binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root) {
