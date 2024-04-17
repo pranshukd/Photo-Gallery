@@ -8,6 +8,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.unsplashphotogallery.databinding.ActivityMainBinding
 import com.example.unsplashphotogallery.datamodels.GetRandomImagesResponse
+import com.example.unsplashphotogallery.utils.PhotoAdapter
 import com.example.unsplashphotogallery.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<MainViewModel>()
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var photoAdapter: PhotoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,13 +30,19 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
         viewModel.photos.observe(this){ handleApiResponse(it)}
+        viewModel.getRandomImages(1, applicationContext)
+        setAdapter()
+    }
 
-        viewModel.getRandomImages(20, applicationContext)
+    private fun setAdapter() {
+        photoAdapter = PhotoAdapter()
+        binding.rvPhotos.adapter = photoAdapter
     }
 
     private fun handleApiResponse(response: GetRandomImagesResponse?) {
-        println(response)
+        response?.let {
+            photoAdapter.setPhotos(it)
+        }
     }
 }
