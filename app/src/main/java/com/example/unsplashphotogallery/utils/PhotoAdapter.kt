@@ -38,6 +38,7 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
     class PhotoViewHolder(var binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(unsplashImage: UnsplashImage) {
+            binding.img.setImageResource(R.drawable.ic_image)
             unsplashImage.urls?.regular?.let { url ->
                 val imageDownloader = ImageDownloader(url, object : ImageDownloader.OnImageDownloadedListener {
                     override fun onImageDownloaded(bitmap: Bitmap?) {

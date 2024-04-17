@@ -6,7 +6,8 @@ import retrofit2.http.Query
 
 interface ApiInterface {
 
-    @GET("photos/random")
-    suspend fun  getRandomImages(@Query("count") count : Int): GetRandomImagesResponse
+//    @GET("photos/random")
+    @GET("photos")
+    suspend fun  getRandomImages(@Query("page") page : Int, @Query("per_page") perPage : Int): GetRandomImagesResponse
 
 }

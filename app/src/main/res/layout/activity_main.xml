@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="Hello World!"
-        app:spanCount="2"
+        app:spanCount="3"
         tools:itemCount="1000"
         tools:listitem="@layout/item_image"
         app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"

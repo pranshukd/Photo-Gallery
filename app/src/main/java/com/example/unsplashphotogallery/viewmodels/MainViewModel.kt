@@ -18,17 +18,17 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class MainViewModel @Inject constructor( private val repository: UnsplashRepo) : ViewModel() {
+class MainViewModel @Inject constructor(private val repository: UnsplashRepo) : ViewModel() {
 
     private val _photos = MutableLiveData<GetRandomImagesResponse>()
     val photos: LiveData<GetRandomImagesResponse> get() = _photos
 
-    fun getRandomImages(count: Int, context: Context) {
+    fun getRandomImages(page: Int, perPage: Int, context: Context) {
         viewModelScope.launch {
             try {
-                _photos.value = repository.getRandomImages(count)
+                _photos.value = repository.getRandomImages(page, perPage)
             } catch (e: Exception) {
-                handleApiError(e,context)
+                handleApiError(e, context)
             }
         }
     }
@@ -39,9 +39,11 @@ class MainViewModel @Inject constructor( private val repository: UnsplashRepo) :
                 val errorBody = e.response()?.errorBody()?.string()
                 parseErrorMessage(errorBody) ?: "Unknown error occurred"
             }
+
             is IOException -> {
                 "Network error occurred. Please check your internet connection."
             }
+
             else -> {
                 "Unknown error occurred"
             }

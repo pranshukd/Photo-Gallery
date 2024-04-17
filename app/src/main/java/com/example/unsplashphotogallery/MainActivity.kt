@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         viewModel.photos.observe(this){ handleApiResponse(it)}
-        viewModel.getRandomImages(1, applicationContext)
+        viewModel.getRandomImages(20,500, applicationContext)
         setAdapter()
     }
 
