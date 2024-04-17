@@ -2,18 +2,25 @@ package com.example.unsplashphotogallery.utils
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.drawToBitmap
 import androidx.recyclerview.widget.RecyclerView
 import com.example.unsplashphotogallery.R
 import com.example.unsplashphotogallery.databinding.ItemImageBinding
+import com.example.unsplashphotogallery.datamodels.CachedImage
 import com.example.unsplashphotogallery.datamodels.GetRandomImagesResponse.UnsplashImage
-import java.util.concurrent.Executors
+import com.example.unsplashphotogallery.room.CachedImageDao
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 
-class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
+class PhotoAdapter(
+    private val cachedImageDao: CachedImageDao,
+) : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>(
+) {
 
     private val photos = mutableListOf<UnsplashImage>()
 
@@ -32,26 +39,76 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
     fun setPhotos(newPhotos: List<UnsplashImage>) {
 //        photos.clear()
         photos.addAll(newPhotos)
-        notifyItemRangeChanged(photos.size-newPhotos.size, newPhotos.size)
+        notifyItemRangeChanged(photos.size - newPhotos.size, newPhotos.size)
     }
 
-    class PhotoViewHolder(var binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class PhotoViewHolder(var binding: ItemImageBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(unsplashImage: UnsplashImage) {
-            binding.img.setImageResource(R.drawable.ic_image)
-            unsplashImage.urls?.regular?.let { url ->
-                val imageDownloader = ImageDownloader(url, object : ImageDownloader.OnImageDownloadedListener {
-                    override fun onImageDownloaded(bitmap: Bitmap?) {
-                        if (bitmap != null) {
+            try {
+                binding.img.setImageResource(R.drawable.ic_image)
+                unsplashImage.id?.let { id ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val cachedImage = withContext(Dispatchers.IO) {
+                            getCachedImage(unsplashImage.id)
+                        }
+                        if (cachedImage != null) {
+                            // If cached, load bitmap from byte array
+                            val bitmap = BitmapFactory.decodeFile(cachedImage.imagePath)
                             binding.img.setImageBitmap(bitmap)
                         } else {
-                            binding.img.setImageResource(R.drawable.ic_image_not_supported)
+                            unsplashImage.urls?.regular?.let { url ->
+                                val imageDownloader =
+                                    ImageDownloader(
+                                        url,
+                                        object : ImageDownloader.OnImageDownloadedListener {
+                                            override fun onImageDownloaded(bitmap: Bitmap?) {
+                                                if (bitmap != null) {
+                                                    binding.img.setImageBitmap(bitmap)
+//                                            cacheImageToDatabase(unsplashImage.id, unsplashImage.urls.regular, bitmap)
+                                                    CoroutineScope(Dispatchers.Main).launch {
+                                                        saveBitmapToCacheAndDb(
+                                                            bitmap,
+                                                            id,
+                                                            url
+                                                        )
+                                                    }
+                                                } else {
+                                                    binding.img.setImageResource(R.drawable.ic_image_not_supported)
+                                                }
+                                            }
+                                        })
+                                imageDownloader.execute()
+                            } ?: let {
+                                binding.img.setImageResource(R.drawable.ic_image_not_supported)
+                            }
                         }
                     }
-                })
-                imageDownloader.execute()
-            }?:let {
+                }
+            }catch (e: Exception){
+                e.printStackTrace()
                 binding.img.setImageResource(R.drawable.ic_image_not_supported)
+            }
+        }
+
+        private suspend fun getCachedImage(id: String): CachedImage? {
+            return withContext(Dispatchers.IO) {
+                cachedImageDao.getImage(id)
+            }
+        }
+
+        suspend fun saveBitmapToCacheAndDb(bitmap: Bitmap, id: String, url: String) {
+            withContext(Dispatchers.IO) {
+                val cacheDir = binding.root.context.cacheDir
+                val imageFile = File(cacheDir, "$id.jpg")
+                val outputStream = FileOutputStream(imageFile)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                outputStream.flush()
+                outputStream.close()
+                val imagePath = imageFile.absolutePath
+                val cachedImage = CachedImage(id, url, imagePath)
+                cachedImageDao.insertImage(cachedImage)
             }
         }
 

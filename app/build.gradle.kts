@@ -52,6 +52,10 @@ dependencies {
     implementation(libs.hilt)
     kapt(libs.hiltCompiler)
 
+    implementation(libs.roomRuntime)
+    implementation(libs.roomKtx)
+    kapt(libs.roomCompiler)
+
     implementation(libs.retrofit)
     implementation(libs.retrofitConverter)
     implementation(libs.loggingInterceptor)
