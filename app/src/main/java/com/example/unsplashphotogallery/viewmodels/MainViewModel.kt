@@ -23,10 +23,10 @@ class MainViewModel @Inject constructor(private val repository: UnsplashRepo) : 
     private val _photos = MutableLiveData<GetRandomImagesResponse>()
     val photos: LiveData<GetRandomImagesResponse> get() = _photos
 
-    fun getImages(page: Int, perPage: Int, context: Context) {
+    fun getImages(page: Int, photosPerPage: Int, context: Context) {
         viewModelScope.launch {
             try {
-                _photos.value = repository.getRandomImages(page, perPage)
+                _photos.value = repository.getRandomImages(page, photosPerPage)
             } catch (e: Exception) {
                 handleApiError(e, context)
             }
